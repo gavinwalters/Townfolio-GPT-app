@@ -65,3 +65,6 @@ def main():
         print(f"Email for {community}:\n")
         print(email_content)
         print("-" * 40)
+
+if __name__ == "__main__":
+    main()
