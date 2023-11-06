@@ -17,7 +17,7 @@ def generate_email(community, data):
 
     # Define the user message
     user_msg = f"""
-        Write a professional lead acquisition email for TerraByte Solutions. The email is addressed to the Municipal Manager of {community}. Mention our services in web design and development, cybersecurity, and AI-driven solutions. Highlight our commitment to enhancing economic development, quality of living, and population growth. Our aim is to partner with them to revitalize their community's digital presence. Begin with a greeting, introduce TerraByte Solutions, provide the offer drawing on specific data points provided in the data, and end with a call to action. Here is the data: {data}
+        Write a professional lead acquisition email for TerraByte Solutions. The email is addressed to the Municipal Manager of {community}. Mention our services in web design and development, cybersecurity, and AI-driven solutions. Highlight our commitment to enhancing economic development, quality of living, and population growth. Our aim is to partner with them to revitalize their community's digital presence. Begin with a greeting, introduce TerraByte Solutions, provide the offer drawing on specific data points provided in the data; pull out and articulate key takeaways from any data used, and end with a call to action. Here is the data: {data}
         """
 
     # Create a dataset using GPT
@@ -54,38 +54,92 @@ def read_dataset(file_path, community):
     except:
         print(community + " not found at " + file_path)
         
+def specificCommunity():
+    is_specific = input("Do you want to target a specific community? (y/n) ")
+    if is_specific.lower() == 'y':
+        return True
+    else:
+        return False
 
 
 # Main logic
 def main():
-    communities = read_communities()
-    filepaths = get_filepaths(communities)
-    # print(filepaths)ç
+    is_specific = specificCommunity()
+    while not is_specific:
+        communities = read_communities()
+        filepaths = get_filepaths(communities)
+        # print(filepaths)ç
 
-    communities_info = {}
-    for key in filepaths:
-        path = filepaths[key] + '/data.txt'
-        communities_info[key]=read_dataset(path, key)
-        # print("key: " +key)
+        communities_info = {}
+        for key in filepaths:
+            path = filepaths[key] + '/data.txt'
+            communities_info[key]=read_dataset(path, key)
+            # print("key: " +key)
 
-    # Generate and print emails for each community
-    for community in communities_info:
-        # print(community)
-        email_content = generate_email(community, communities_info[community])
-        print(f"Email for {community}:\n")
-        print(email_content['choices'][0]['message']['content'])
-        filename = str(community) + "-email.txt"
-        path = "/Users/gavin/Documents/Townfolio data/Emails/" + filename
-        try:
-            f = open(path, "x")
-            f.write(email_content['choices'][0]['message']['content'])
-            f.close()
-        except:
+        # Generate and print emails for each community
+        for community in communities_info:
+            # print(community)
+            email_content = generate_email(community, communities_info[community])
+            print(f"Email for {community}:\n")
+            print(email_content['choices'][0]['message']['content'])
+            filename = str(community) + "-email.txt"
+            path = "/Users/gavin/Documents/Townfolio data/Emails/" + filename
+            try:
+                f = open(path, "x")
+                f.write(email_content['choices'][0]['message']['content'])
+                f.close()
+            except:
+                continue
+            # print(f.read())
+            print("-" * 40)
+
+            time.sleep(1)
+    while is_specific:
+        community = input("Which community would you like to email? (type exit to exit) ")
+        if community.lower() == 'exit':
+            is_specific = False
             continue
-        # print(f.read())
-        print("-" * 40)
+        community_list = [community]
+        filepaths = get_filepaths(community_list)
+        communities_info = {}
+        for key in filepaths:
+            path = filepaths[key] + '/data.txt'
+            communities_info[key]=read_dataset(path, key)
+        # Generate and print emails for each community
+        for community in communities_info:
+            email_content = generate_email(community, communities_info[community])
+            print(f"Email for {community}:\n")
+            print(email_content['choices'][0]['message']['content'])
+            filename = str(community) + "-email.txt"
+            path = "/Users/gavin/Documents/Townfolio data/Emails/" + filename
+            print("path is " +path)
+            try:
+                print("try path 1")
+                f = open(path, "x")
+                f.write(email_content['choices'][0]['message']['content'])
+                f.close()
+            except:
 
-        time.sleep(1)
+                i=0
+                while os.path.isfile(path):
+                    print("exception")
+                    path = "/Users/gavin/Documents/Townfolio data/Emails/" + str(community) + "-email_" + str(i) + ".txt"
+                    print("new path: " + path)
+                    i += 1
+                f = open(path, "x")
+                f.write(email_content['choices'][0]['message']['content'])
+                f.close()
+
+
+
+                
+            # print(f.read())
+            print("-" * 40)
+
+            time.sleep(1)
+
+            
+
 
 if __name__ == "__main__":
     main()
